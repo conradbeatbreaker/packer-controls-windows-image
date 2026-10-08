@@ -1,0 +1,45 @@
+name: Build image
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: [self-hosted, linux, rhel9]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify versions.pkr.hcl matches versions.yaml
+        run: ./scripts/check-divergence.sh
+        # STUB: regenerates and diffs. Fails if someone hand-edited the
+        # required_plugins block. This check matters HERE, not just in
+        # the toolchain repo — this is where a drifted pin would be used.
+
+      - name: Bootstrap Packer and plugins from Nexus
+        uses: acme/packer-toolchain/.github/actions/bootstrap@a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
+        # Pinned by commit SHA, not by tag. A tag can be moved, which
+        # would put a hole in the pinning story.
+        env:
+          NEXUS_URL: ${{ vars.NEXUS_URL }}
+          NEXUS_USER: ${{ secrets.NEXUS_CI_USER }}
+          NEXUS_PASS: ${{ secrets.NEXUS_CI_PASS }}
+        # STUB: pulls pinned versions from Nexus, re-verifies signature
+        # and checksum against the pinned fingerprint, installs via
+        # `packer plugins install --path`. Fails the job on mismatch.
+
+      - name: Validate
+        run: packer validate .
+        # No `packer init`. Plugins are already installed and pinned;
+        # init would reintroduce a path to the internet.
+
+      - name: Build
+        if: github.event_name != 'pull_request'
+        run: packer build .
+        env:
+          PKR_VAR_vcenter_password: ${{ secrets.VCENTER_PASSWORD }}

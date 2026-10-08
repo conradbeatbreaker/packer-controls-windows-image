@@ -1,0 +1,52 @@
+name: Bump toolchain
+
+# Triggered by the toolchain repo's promote job. Pulls the approved
+# versions.yaml at a specific commit, regenerates versions.pkr.hcl,
+# and opens a PR here. This repo approves its own bump.
+
+on:
+  workflow_dispatch:
+    inputs:
+      toolchain_sha:
+        description: "Commit SHA in packer-toolchain to pin to"
+        required: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch approved versions.yaml at that SHA
+        env:
+          GH_TOKEN: ${{ secrets.TOOLCHAIN_READ_TOKEN }}
+        run: |
+          gh api \
+            "repos/acme/packer-toolchain/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
+            --jq '.content' | base64 -d > versions.yaml
+          echo "${{ inputs.toolchain_sha }}" > .toolchain-sha
+
+      - name: Regenerate versions.pkr.hcl
+        run: ./scripts/generate-required-plugins.sh
+        # STUB: renders versions.pkr.hcl from versions.yaml.
+        # The packer block does not interpolate variables, so the
+        # required_plugins block is generated rather than templated.
+
+      - name: Open PR
+        uses: peter-evans/create-pull-request@v6
+        with:
+          branch: bump/toolchain-${{ inputs.toolchain_sha }}
+          title: "Bump Packer toolchain to ${{ inputs.toolchain_sha }}"
+          body: |
+            Toolchain bump promoted upstream and approved there.
+            This PR pins this image repo to that approved state.
+
+            Toolchain commit: acme/packer-toolchain@${{ inputs.toolchain_sha }}
+
+            CI will verify versions.pkr.hcl matches versions.yaml and
+            that a build succeeds before this is mergeable.
+          labels: toolchain-bump
