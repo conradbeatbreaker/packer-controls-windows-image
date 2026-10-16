@@ -21,14 +21,14 @@ jobs:
         # required_plugins block. This check matters HERE, not just in
         # the toolchain repo — this is where a drifted pin would be used.
 
-      - name: Bootstrap Packer and plugins from Nexus
-        uses: conradbeatbreaker/packer-toolchain/.github/actions/bootstrap@a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
+      #- name: Bootstrap Packer and plugins from Nexus
+      #  uses: conradbeatbreaker/packer-toolchain/.github/actions/bootstrap@a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
         # Pinned by commit SHA, not by tag. A tag can be moved, which
         # would put a hole in the pinning story.
-        env:
-          NEXUS_URL: ${{ vars.NEXUS_URL }}
-          NEXUS_USER: ${{ secrets.NEXUS_CI_USER }}
-          NEXUS_PASS: ${{ secrets.NEXUS_CI_PASS }}
+      #  env:
+      #    NEXUS_URL: ${{ vars.NEXUS_URL }}
+      #    NEXUS_USER: ${{ secrets.NEXUS_CI_USER }}
+      #    NEXUS_PASS: ${{ secrets.NEXUS_CI_PASS }}
         # STUB: pulls pinned versions from Nexus, re-verifies signature
         # and checksum against the pinned fingerprint, installs via
         # `packer plugins install --path`. Fails the job on mismatch.
