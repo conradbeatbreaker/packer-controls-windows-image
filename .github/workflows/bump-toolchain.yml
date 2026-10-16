@@ -26,7 +26,7 @@ jobs:
           GH_TOKEN: ${{ secrets.TOOLCHAIN_READ_TOKEN }}
         run: |
           gh api \
-            "repos/acme/packer-toolchain/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
+            "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
             --jq '.content' | base64 -d > versions.yaml
           echo "${{ inputs.toolchain_sha }}" > .toolchain-sha
 
@@ -45,7 +45,7 @@ jobs:
             Toolchain bump promoted upstream and approved there.
             This PR pins this image repo to that approved state.
 
-            Toolchain commit: acme/packer-toolchain@${{ inputs.toolchain_sha }}
+            Toolchain commit: conradbeatbreaker/packer-toolchain@${{ inputs.toolchain_sha }}
 
             CI will verify versions.pkr.hcl matches versions.yaml and
             that a build succeeds before this is mergeable.
