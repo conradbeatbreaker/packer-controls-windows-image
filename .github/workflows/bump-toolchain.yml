@@ -35,14 +35,14 @@ jobs:
             "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=$sha" \
             --jq '.content' | base64 -d > "$tmp"
           ./scripts/generate-required-plugins.sh "$tmp"
-          echo "${{ inputs.toolchain_sha }}" > .toolchain-sha
+          echo "$sha" > .toolchain-sha
 
       - name: Open PR
         uses: peter-evans/create-pull-request@v6
         with:
           branch: bump/toolchain
           delete-branch: true
-          title: "Bump Packer toolchain to ${{ inputs.toolchain_sha }
+          title: "Bump Packer toolchain to ${{ inputs.toolchain_sha }}"
           body: |
             Toolchain bump promoted upstream and approved there.
             This PR pins this image repo to that approved state.
