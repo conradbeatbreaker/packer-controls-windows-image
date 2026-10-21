@@ -2,8 +2,10 @@ name: Build image
 
 on:
   pull_request:
+    paths: ['**.pkr.hcl', 'playbooks/**', 'http/**', 'scripts/**']
   push:
     branches: [main]
+    paths: [same]
   workflow_dispatch:
 
 permissions:
