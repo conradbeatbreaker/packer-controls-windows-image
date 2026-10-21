@@ -29,7 +29,7 @@ jobs:
           tmp="$(mktemp)"
           trap 'rm -f "$tmp"' EXIT
           gh api \
-            "repos/conradbeatbreaker/packer-controls/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
+            "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
             --jq '.content' | base64 -d > "$tmp"
           ./scripts/generate-required-plugins.sh "$tmp"
           echo "${{ inputs.toolchain_sha }}" > .toolchain-sha
