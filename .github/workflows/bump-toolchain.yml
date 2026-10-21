@@ -21,20 +21,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Fetch approved versions.yaml at that SHA
+      - name: Regenerate versions.pkr.hcl from approved versions.yaml
         env:
           GH_TOKEN: ${{ secrets.TOOLCHAIN_READ_TOKEN }}
         run: |
+          set -euo pipefail
+          tmp="$(mktemp)"
+          trap 'rm -f "$tmp"' EXIT
           gh api \
-            "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
-            --jq '.content' | base64 -d > versions.yaml
+            "repos/conradbeatbreaker/packer-controls/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
+            --jq '.content' | base64 -d > "$tmp"
+          ./scripts/generate-required-plugins.sh "$tmp"
           echo "${{ inputs.toolchain_sha }}" > .toolchain-sha
-
-      - name: Regenerate versions.pkr.hcl
-        run: ./scripts/generate-required-plugins.sh
-        # STUB: renders versions.pkr.hcl from versions.yaml.
-        # The packer block does not interpolate variables, so the
-        # required_plugins block is generated rather than templated.
 
       - name: Open PR
         uses: peter-evans/create-pull-request@v6
