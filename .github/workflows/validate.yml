@@ -1,0 +1,48 @@
+name: Validate
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  divergence:
+    name: versions.pkr.hcl matches pinned toolchain
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify versions.pkr.hcl matches versions.yaml
+        env:
+          GH_TOKEN: ${{ secrets.TOOLCHAIN_READ_TOKEN }}
+        run: ./scripts/check-divergence.sh
+        # STUB. Real version: reads .toolchain-sha, fetches versions.yaml
+        # from the toolchain repo at that SHA, regenerates versions.pkr.hcl
+        # into a temp file, diffs against the committed one, fails on
+        # difference. Catches a hand-edited required_plugins block.
+
+  validate:
+    name: packer validate
+    runs-on: [self-hosted, linux, rhel9]
+    needs: divergence
+    steps:
+      - uses: actions/checkout@v4
+
+      #- name: Bootstrap Packer and plugins from Nexus
+      #  uses: conradbeatbreaker/packer-toolchain/.github/actions/bootstrap@a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
+      #  env:
+      #    NEXUS_URL: ${{ vars.NEXUS_URL }}
+      #    NEXUS_USER: ${{ secrets.NEXUS_CI_USER }}
+      #    NEXUS_PASS: ${{ secrets.NEXUS_CI_PASS }}
+        # STUB: pulls pinned versions from Nexus, re-verifies signature and
+        # checksum against the pinned fingerprint, installs via
+        # `packer plugins install --path`. Fails the job on mismatch.
+
+      - name: Validate
+        run: packer validate .
+        # No `packer init`. Plugins are already installed and pinned;
+        # init would reintroduce a path to the internet.
