@@ -28,8 +28,11 @@ jobs:
           set -euo pipefail
           tmp="$(mktemp)"
           trap 'rm -f "$tmp"' EXIT
+          sha="${{ inputs.toolchain_sha }}"
+          sha="$(echo "$sha" | tr -d '[:space:]')"
+          [[ "$sha" =~ ^[0-9a-f]{7,40}$ ]] || { echo "Not a commit SHA: $sha"; exit 1; }
           gh api \
-            "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=${{ inputs.toolchain_sha }}" \
+            "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=$sha" \
             --jq '.content' | base64 -d > "$tmp"
           ./scripts/generate-required-plugins.sh "$tmp"
           echo "${{ inputs.toolchain_sha }}" > .toolchain-sha
