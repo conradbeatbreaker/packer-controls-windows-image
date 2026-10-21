@@ -40,8 +40,9 @@ jobs:
       - name: Open PR
         uses: peter-evans/create-pull-request@v6
         with:
-          branch: bump/toolchain-${{ inputs.toolchain_sha }}
-          title: "Bump Packer toolchain to ${{ inputs.toolchain_sha }}"
+          branch: bump/toolchain
+          delete-branch: true
+          title: "Bump Packer toolchain to ${{ inputs.toolchain_sha }
           body: |
             Toolchain bump promoted upstream and approved there.
             This PR pins this image repo to that approved state.
