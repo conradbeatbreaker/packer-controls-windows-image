@@ -22,7 +22,7 @@ on:
         description: "OS to build"
         type: choice
         options: ["Windows Server 2019", "Windows Server 2022", "Windows Server 2025"]
-        default: "Windows Server 2022"
+        default: "Windows Server 2025"
       iso_item_name:
         description: "OS ISO content-library item name"
         required: true
