@@ -1,0 +1,10 @@
+---
+# timezone.yml
+- name: 'Configure windows update own process'
+  hosts: default
+
+  tasks:
+    - name: Configure windows update own process
+      ansible.windows.win_service:
+        name: wuauserv
+        service_type: win32_own_process

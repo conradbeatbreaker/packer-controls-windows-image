@@ -63,6 +63,6 @@ jobs:
         # job on any mismatch.
 
       - name: Validate
-        run: packer validate .
+        run: packer validate -var-file=ci/validate.pkrvars.hcl .
         # No `packer init`. Plugins are already installed and pinned;
         # init would reintroduce a path to the internet.

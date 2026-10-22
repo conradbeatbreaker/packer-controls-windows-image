@@ -1,0 +1,12 @@
+---
+# registry_crashcontrol_nmi.yml
+- name: 'Enable NMI Crash Dump'
+  hosts: default
+
+  tasks:
+    - name: Enable NMI Crash Dump
+      ansible.windows.win_regedit:
+        path: HKLM:\SYSTEM\CurrentControlSet\Control
+        name: NMICrashDump
+        data: 1
+        type: dword

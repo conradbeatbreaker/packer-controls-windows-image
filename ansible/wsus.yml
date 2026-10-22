@@ -1,0 +1,31 @@
+---
+# festure_add_iis.yml
+- name: 'Install updates'
+  hosts: default
+
+  tasks:
+    - name: Configure WUServer
+      win_regedit:
+        key: HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate
+        value: WUServer
+        data: "http://{{ wsus_server }}:8530"
+        datatype: string
+      when: wsus_server is defined
+
+    - name: Configure WUStatusServer
+      win_regedit:
+        key: HKLM:\Software\Policies\Microsoft\Windows\WindowsUpdate
+        value: WUStatusServer
+        data: "http://{{ wsus_server }}:8530"
+        datatype: string
+      when: wsus_server is defined
+
+    - name: Install all security, critical, and rollup updates
+      ansible.windows.win_updates:
+        category_names:
+          - SecurityUpdates
+          - CriticalUpdates
+          - UpdateRollups
+      become: true
+      become_method: runas
+      become_user: SYSTEM
