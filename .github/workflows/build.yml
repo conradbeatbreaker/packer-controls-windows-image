@@ -21,7 +21,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: [self-hosted, linux, rhel9]
+    runs-on: [self-hosted, linux, packer]
     steps:
       - uses: actions/checkout@v4
 
