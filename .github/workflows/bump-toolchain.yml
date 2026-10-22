@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   bump:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, packer]
     steps:
       - uses: actions/checkout@v4
 
@@ -30,7 +30,7 @@ jobs:
           trap 'rm -f "$tmp"' EXIT
           sha="${{ inputs.toolchain_sha }}"
           sha="$(echo "$sha" | tr -d '[:space:]')"
-          [[ "$sha" =~ ^[0-9a-f]{7,40}$ ]] || { echo "Not a commit SHA: $sha"; exit 1; }
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "Not a full commit SHA: $sha"; exit 1; }
           gh api \
             "repos/conradbeatbreaker/packer-toolchain/contents/versions.yaml?ref=$sha" \
             --jq '.content' | base64 -d > "$tmp"

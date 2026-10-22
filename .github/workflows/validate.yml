@@ -12,7 +12,7 @@ permissions:
 jobs:
   divergence:
     name: versions.pkr.hcl matches pinned toolchain
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, linux, packer]
     steps:
       - uses: actions/checkout@v4
 
@@ -20,10 +20,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.TOOLCHAIN_READ_TOKEN }}
         run: ./scripts/check-divergence.sh
-        # STUB. Real version: reads .toolchain-sha, fetches versions.yaml
-        # from the toolchain repo at that SHA, regenerates versions.pkr.hcl
-        # into a temp file, diffs against the committed one, fails on
-        # difference. Catches a hand-edited required_plugins block.
+        # Reads .toolchain-sha, fetches versions.yaml from the toolchain
+        # repo at that SHA, regenerates versions.pkr.hcl into a temp file,
+        # diffs against the committed one, fails on difference. Catches a
+        # hand-edited required_plugins block.
 
   validate:
     name: packer validate
@@ -32,15 +32,35 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      #- name: Bootstrap Packer and plugins from Nexus
-      #  uses: conradbeatbreaker/packer-toolchain/.github/actions/bootstrap@a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0
-      #  env:
-      #    NEXUS_URL: ${{ vars.NEXUS_URL }}
-      #    NEXUS_USER: ${{ secrets.NEXUS_CI_USER }}
-      #    NEXUS_PASS: ${{ secrets.NEXUS_CI_PASS }}
-        # STUB: pulls pinned versions from Nexus, re-verifies signature and
-        # checksum against the pinned fingerprint, installs via
-        # `packer plugins install --path`. Fails the job on mismatch.
+      - name: Read pinned toolchain commit
+        id: pin
+        run: |
+          sha="$(tr -d '[:space:]' < .toolchain-sha)"
+          [[ "$sha" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::.toolchain-sha is not a full commit SHA"; exit 1; }
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      - name: Check out packer-toolchain at the pinned commit
+        uses: actions/checkout@v4
+        with:
+          repository: conradbeatbreaker/packer-toolchain
+          ref: ${{ steps.pin.outputs.sha }}
+          token: ${{ secrets.TOOLCHAIN_READ_TOKEN }}
+          path: .toolchain
+          persist-credentials: false
+        # One commit governs the versions, the pinned keys and the
+        # verification code. A composite action pinned separately in this
+        # file could drift from .toolchain-sha.
+
+      - name: Bootstrap Packer and plugins from Nexus
+        env:
+          NEXUS_URL: ${{ vars.NEXUS_URL }}
+          NEXUS_USER: ${{ secrets.NEXUS_CI_USER }}
+          NEXUS_PASS: ${{ secrets.NEXUS_CI_PASS }}
+        run: .toolchain/scripts/bootstrap.sh
+        # Pulls the pinned versions from packer-hosted, verifies the
+        # SHA256SUMS signature against the pinned key and the zip against
+        # the sums, installs via `packer plugins install --path`. Fails the
+        # job on any mismatch.
 
       - name: Validate
         run: packer validate .
