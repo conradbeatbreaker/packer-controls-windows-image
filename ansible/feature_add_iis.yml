@@ -1,0 +1,10 @@
+---
+# festure_add_iis.yml
+- name: 'Install IIS'
+  hosts: default
+
+  tasks:
+    - name: Install IIS (Web-Server only)
+      ansible.windows.win_feature:
+        name: Web-Server
+        state: present

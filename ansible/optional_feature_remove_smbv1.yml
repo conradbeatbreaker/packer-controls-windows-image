@@ -1,0 +1,10 @@
+---
+# optional_feature_remove_smbv1.yml
+- name: 'Remove SMBv1'
+  hosts: default
+
+  tasks:
+    - name: Remove SMBv1
+      ansible.windows.win_optional_feature:
+        name: smb1protocol
+        state: absent

@@ -5,16 +5,34 @@ on:
     paths:
       - '**.pkr.hcl'
       - '!versions.pkr.hcl'
-      - 'playbooks/**'
-      - 'http/**'
+      - 'ansible/**'
+      - 'data_vsphere/**'
+      - 'guest-scripts/**'
   push:
     branches: [main]
     paths:
       - '**.pkr.hcl'
       - '!versions.pkr.hcl'
-      - 'playbooks/**'
-      - 'http/**'
+      - 'ansible/**'
+      - 'data_vsphere/**'
+      - 'guest-scripts/**'
   workflow_dispatch:
+    inputs:
+      os_selection:
+        description: "OS to build"
+        type: choice
+        options: ["Windows Server 2019", "Windows Server 2022", "Windows Server 2025"]
+        default: "Windows Server 2025"
+      iso_item_name:
+        description: "OS ISO content-library item name"
+        required: true
+      tools_item_name:
+        description: "VMware Tools ISO content-library item name"
+        required: true
+
+# A toolchain bump only changes versions.pkr.hcl, so it never triggers a
+# build: validate.yml covers it. The negation must come after '**.pkr.hcl'
+# (last match wins).
 
 permissions:
   contents: read
@@ -59,4 +77,9 @@ jobs:
         if: github.event_name != 'pull_request'
         run: packer build .
         env:
-          PKR_VAR_vcenter_password: ${{ secrets.VCENTER_PASSWORD }}
+          # Push builds have no inputs; they fall back to repository variables.
+          PKR_VAR_os_selection: ${{ inputs.os_selection || vars.OS_SELECTION }}
+          PKR_VAR_iso_item_name: ${{ inputs.iso_item_name || vars.ISO_ITEM_NAME }}
+          PKR_VAR_tools_item_name: ${{ inputs.tools_item_name || vars.TOOLS_ITEM_NAME }}
+          PKR_VAR_vsphere_password: ${{ secrets.VSPHERE_PASSWORD }}
+          PKR_VAR_winrm_password: ${{ secrets.WINRM_PASSWORD }}
