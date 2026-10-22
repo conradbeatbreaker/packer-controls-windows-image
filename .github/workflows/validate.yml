@@ -27,7 +27,7 @@ jobs:
 
   validate:
     name: packer validate
-    runs-on: [self-hosted, linux, rhel9]
+    runs-on: [self-hosted, linux, packer]
     needs: divergence
     steps:
       - uses: actions/checkout@v4
